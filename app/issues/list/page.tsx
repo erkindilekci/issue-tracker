@@ -1,56 +1,56 @@
-import Pagination from "@/components/Pagination";
-import prisma from "@/prisma/client";
-import { Status } from "@prisma/client";
-import IssueActions from "./IssueActions";
-import IssueTable, { IssueQuery, columnNames } from "./IssueTable";
-import { Flex } from "@radix-ui/themes";
-import { Metadata } from "next";
+import { Pagination } from '@/app/components';
+import prisma from '@/prisma/client';
+import { Status } from '@prisma/client';
+import { Flex } from '@radix-ui/themes';
+import { Metadata } from 'next';
+import IssueActionsToolbar from './IssuesActionsToolbar';
+import IssueTable, { columnValues, SearchParams } from './IssueTable';
 
 interface Props {
-    searchParams: IssueQuery;
+    searchParams: SearchParams;
 }
 
 const IssuesPage = async ({ searchParams }: Props) => {
+    // Filtering
     const statuses = Object.values(Status);
-    const status = statuses.includes(searchParams.status)
-        ? searchParams.status
-        : undefined;
-    const where = { status };
+    const status = statuses.includes(searchParams.status) ? searchParams.status : undefined;
 
-    const orderBy = columnNames.includes(searchParams.orderBy)
-        ? { [searchParams.orderBy]: "asc" }
-        : undefined;
+    // Sorting
+    const orderBy = columnValues.includes(searchParams.orderBy) ?
+        { [searchParams.orderBy]: 'asc' } : undefined;
 
-    const page = parseInt(searchParams.page) || 1;
-    const pageSize = 10;
+    // Pagination
+    const currentPage = parseInt(searchParams.page) || 1;
+    const pageSize = 7;
 
     const issues = await prisma.issue.findMany({
-        where,
+        where: { status },
         orderBy,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        skip: (currentPage - 1) * pageSize,
+        take: pageSize
     });
-
-    const issueCount = await prisma.issue.count({ where });
+    const issueCount = await prisma.issue.count({ where: { status } });
 
     return (
-        <Flex direction="column" gap="3">
-            <IssueActions />
-            <IssueTable searchParams={searchParams} issues={issues} />
-            <Pagination
-                pageSize={pageSize}
-                currentPage={page}
-                itemCount={issueCount}
-            />
+        <Flex direction="column" gap="4">
+            <IssueActionsToolbar/>
+            <IssueTable searchParams={searchParams} issues={issues}/>
+            <Flex justify="end">
+                <Pagination
+                    currentPage={currentPage}
+                    pageSize={pageSize}
+                    itemCount={issueCount}
+                />
+            </Flex>
         </Flex>
     );
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: "Issue Tracker - Issue List",
-    description: "View all project issues",
+    title: 'Issue Tracker - Issue List',
+    description: 'View list of issues'
 };
 
 export default IssuesPage;

@@ -1,33 +1,24 @@
-"use client";
+'use client';
 
-import { Skeleton } from "@/components";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import React from "react";
-import { AiFillBug, AiOutlineBug } from "react-icons/ai";
-import classnames from "classnames";
-import { useSession } from "next-auth/react";
-import {
-    Avatar,
-    Box,
-    Container,
-    DropdownMenu,
-    Flex,
-    Text,
-} from "@radix-ui/themes";
+import { Avatar, Box, Container, DropdownMenu, Flex, Skeleton, Text } from '@radix-ui/themes';
+import classNames from 'classnames';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { AiFillBug } from 'react-icons/ai';
 
 const NavBar = () => {
     return (
-        <nav className="border-b mb-5 px-5 py-3">
+        <nav className="py-6 border-b mb-5">
             <Container>
-                <Flex justify="between">
+                <Flex justify="between" align="center">
                     <Flex align="center" gap="3">
                         <Link href="/">
-                            <AiOutlineBug />
+                            <AiFillBug/>
                         </Link>
-                        <NavLinks />
+                        <NavLinks/>
                     </Flex>
-                    <AuthStatus />
+                    <AuthStatus/>
                 </Flex>
             </Container>
         </nav>
@@ -38,20 +29,20 @@ const NavLinks = () => {
     const currentPath = usePathname();
 
     const links = [
-        { label: "Dashboard", href: "/" },
-        { label: "Issues", href: "/issues/list" },
+        { label: 'Dashboard', href: '/' },
+        { label: 'Issues', href: '/issues/list' }
     ];
 
     return (
         <ul className="flex space-x-6">
-            {links.map((link) => (
+            {links.map(link => (
                 <li key={link.href}>
                     <Link
-                        className={classnames({
-                            "nav-link": true,
-                            "!text-zinc-900": link.href === currentPath,
-                        })}
                         href={link.href}
+                        className={classNames({
+                            'nav-link': true,
+                            '!text-zinc-900': currentPath === link.href
+                        })}
                     >
                         {link.label}
                     </Link>
@@ -64,14 +55,11 @@ const NavLinks = () => {
 const AuthStatus = () => {
     const { status, data: session } = useSession();
 
-    if (status === "loading") return <Skeleton width="3rem" />;
+    if (status === 'loading')
+        return <Skeleton width="3rem"/>;
 
-    if (status === "unauthenticated")
-        return (
-            <Link className="nav-link" href="/api/auth/signin">
-                Login
-            </Link>
-        );
+    if (status === 'unauthenticated')
+        return <Link className="nav-link" href="/api/auth/signin">Log in</Link>;
 
     return (
         <Box>
@@ -80,15 +68,15 @@ const AuthStatus = () => {
                     <Avatar
                         src={session!.user!.image!}
                         fallback="?"
-                        size="2"
                         radius="full"
                         className="cursor-pointer"
-                        referrerPolicy="no-referrer"
                     />
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content>
                     <DropdownMenu.Label>
-                        <Text size="2">{session!.user!.email}</Text>
+                        <Text size="2">
+                            {session!.user!.email}
+                        </Text>
                     </DropdownMenu.Label>
                     <DropdownMenu.Item>
                         <Link href="/api/auth/signout">Log out</Link>
